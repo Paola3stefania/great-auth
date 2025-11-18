@@ -1,8 +1,11 @@
+import 'server-only';
+
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { username } from "better-auth/plugins";
 import { db } from "@/lib/db/drizzle";
 import * as betterAuthSchema from "@/lib/db/better-auth-schema";
+import { env } from "@/lib/env";
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -14,11 +17,11 @@ export const auth = betterAuth({
     requireEmailVerification: false,
   },
   socialProviders: {
-    google: {
+    google: env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET ? {
       prompt: "select_account",
-      clientId: process.env.GOOGLE_CLIENT_ID as string,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-    },
+      clientId: env.GOOGLE_CLIENT_ID,
+      clientSecret: env.GOOGLE_CLIENT_SECRET,
+    } : undefined,
   },
   session: {
     cookieCache: {
@@ -58,7 +61,7 @@ export const auth = betterAuth({
       },
     }),
   ],
-  baseURL: process.env.BASE_URL || "http://localhost:3000",
+  baseURL: env.BETTER_AUTH_URL,
   basePath: "/api/auth",
 });
 

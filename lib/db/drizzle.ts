@@ -1,6 +1,7 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import * as schema from './schema';
+import * as appSchema from './schema';
+import * as betterAuthSchema from './better-auth-schema';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -10,4 +11,6 @@ if (!process.env.POSTGRES_URL) {
 }
 
 export const client = postgres(process.env.POSTGRES_URL);
-export const db = drizzle(client, { schema });
+export const db = drizzle(client, { 
+  schema: { ...appSchema, ...betterAuthSchema } 
+});

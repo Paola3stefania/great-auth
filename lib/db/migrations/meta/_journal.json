@@ -8,6 +8,20 @@
       "when": 1726443359662,
       "tag": "0000_soft_the_anarchist",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1763421860892,
+      "tag": "0001_amazing_warlock",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1763423419176,
+      "tag": "0002_peaceful_spot",
+      "breakpoints": true
     }
   ]
 }

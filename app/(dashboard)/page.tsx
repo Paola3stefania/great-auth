@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight, Key, Shield, Database, Lock } from 'lucide-react';
 import { AuthForm } from '@/components/auth/auth-form';
 import { BetterAuthLogo } from '@/components/ui/better-auth-logo';
+import { Suspense } from 'react';
 
 export default function HomePage() {
   return (
@@ -24,7 +25,9 @@ export default function HomePage() {
               </p>
             </div>
             <div className="mt-12 relative sm:max-w-lg sm:mx-auto lg:mt-0 lg:max-w-none lg:mx-0 lg:col-span-6 lg:flex lg:items-center lg:justify-center">
-              <AuthForm />
+              <Suspense fallback={<div className="w-full max-w-md mx-auto bg-white rounded-lg shadow-lg p-8 animate-pulse">Loading...</div>}>
+                <AuthForm />
+              </Suspense>
             </div>
           </div>
         </div>

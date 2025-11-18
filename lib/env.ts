@@ -14,25 +14,56 @@ if (typeof window !== 'undefined') {
 const required = (name: string): string => {
   const value = process.env[name];
   if (value === undefined || value === null || value === '') {
-    // Show diagnostic info when env var is missing
+    // Show comprehensive diagnostic info when env var is missing
     const envKeys = Object.keys(process.env).sort();
-    const sampleKeys = envKeys.slice(0, 10).join(', ');
-    const hasDatabaseVars = envKeys.some(key => 
-      key.includes('POSTGRES') || key.includes('DATABASE') || key.includes('DB_')
+    
+    // Find similar variable names (case variations, etc.)
+    const similarKeys = envKeys.filter(key => 
+      key.toLowerCase() === name.toLowerCase() ||
+      key.toLowerCase().includes(name.toLowerCase()) ||
+      name.toLowerCase().includes(key.toLowerCase())
     );
     
-    throw new Error(
-      `[env] Missing required environment variable: ${name}.\n` +
-      `Make sure it's set in Amplify:\n` +
-      `- App settings → Environment variables (for runtime/SSR)\n` +
-      `- Build settings → Environment variables (for build-time)\n\n` +
-      `Diagnostics:\n` +
-      `- Total env vars found: ${envKeys.length}\n` +
-      `- Database-related vars: ${hasDatabaseVars ? 'Found some' : 'None found'}\n` +
-      `- Sample vars: ${sampleKeys}\n\n` +
-      `Note: In Amplify, environment variables must be set in App Settings → Environment variables ` +
-      `for the RUNTIME environment (Lambda/SSR), not just during build.`
+    // Check for database-related variables
+    const databaseKeys = envKeys.filter(key => 
+      key.includes('POSTGRES') || 
+      key.includes('DATABASE') || 
+      key.includes('DB_') ||
+      key.includes('RDS_')
     );
+    
+    const sampleKeys = envKeys.slice(0, 15).join(', ');
+    
+    let diagnosticMessage = `[env] Missing required environment variable: ${name}\n\n`;
+    diagnosticMessage += `Diagnostics:\n`;
+    diagnosticMessage += `- Total env vars found: ${envKeys.length}\n`;
+    
+    if (similarKeys.length > 0) {
+      diagnosticMessage += `- Similar variable names found: ${similarKeys.join(', ')}\n`;
+      diagnosticMessage += `  ⚠️  Check for typos or case sensitivity issues!\n`;
+    }
+    
+    if (databaseKeys.length > 0) {
+      diagnosticMessage += `- Database-related vars found: ${databaseKeys.join(', ')}\n`;
+    } else {
+      diagnosticMessage += `- Database-related vars: None found\n`;
+    }
+    
+    diagnosticMessage += `- Sample env vars: ${sampleKeys}\n\n`;
+    
+    // Amplify-specific guidance
+    diagnosticMessage += `How to fix in Amplify:\n`;
+    diagnosticMessage += `1. Go to: Amplify Console → Your App → App settings → Environment variables\n`;
+    diagnosticMessage += `2. Make sure variable is set for your branch/environment (e.g., "main")\n`;
+    diagnosticMessage += `3. Variable name must be exactly: ${name} (case-sensitive)\n`;
+    diagnosticMessage += `4. Save and trigger a NEW deployment (variables only apply to new deployments)\n`;
+    diagnosticMessage += `5. If using Secrets, ensure it's linked to your branch/environment\n\n`;
+    
+    diagnosticMessage += `Note: Environment variables set during build are different from runtime variables.\n`;
+    diagnosticMessage += `Make sure POSTGRES_URL is in "App settings → Environment variables" (for runtime), `;
+    diagnosticMessage += `not just "Build settings → Environment variables" (for build-time only).\n`;
+    
+    throw new Error(diagnosticMessage);
   }
   return value;
 };

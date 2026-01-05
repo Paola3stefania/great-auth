@@ -34,7 +34,7 @@ function UserMenu() {
     await signOut({
       fetchOptions: {
         onSuccess: () => {
-          router.push('/');
+    router.push('/');
           router.refresh();
         },
       },
@@ -76,9 +76,9 @@ function UserMenu() {
           className="cursor-pointer"
           onClick={handleSignOut}
         >
-          <LogOut className="mr-2 h-4 w-4" />
-          <span>Sign out</span>
-        </DropdownMenuItem>
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>Sign out</span>
+            </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

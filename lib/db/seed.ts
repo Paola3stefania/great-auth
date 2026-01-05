@@ -1,47 +1,5 @@
-import { db } from './drizzle';
-import { users, teams, teamMembers } from './schema';
-import { hash } from 'bcryptjs';
+// Seed script is no longer needed.
+// User creation is handled by Better Auth through the signup flow.
+// To create a test user, use the signup form in the application.
 
-async function seed() {
-  const email = 'test@test.com';
-  const password = 'admin123';
-  const passwordHash = await hash(password, 10);
-
-  const [user] = await db
-    .insert(users)
-    .values([
-      {
-        email: email,
-        passwordHash: passwordHash,
-        role: "owner",
-      },
-    ])
-    .returning();
-
-  console.log('Initial user created.');
-
-  const [team] = await db
-    .insert(teams)
-    .values({
-      name: 'Test Team',
-    })
-    .returning();
-
-  await db.insert(teamMembers).values({
-    teamId: team.id,
-    userId: user.id,
-    role: 'owner',
-  });
-
-  console.log('Seed completed successfully.');
-}
-
-seed()
-  .catch((error) => {
-    console.error('Seed process failed:', error);
-    process.exit(1);
-  })
-  .finally(() => {
-    console.log('Seed process finished. Exiting...');
-    process.exit(0);
-  });
+console.log('Seed script is deprecated. Use Better Auth signup flow to create users.');

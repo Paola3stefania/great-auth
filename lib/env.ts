@@ -105,7 +105,10 @@ export const env = {
   POSTGRES_URL: required('POSTGRES_URL'),
 
   // Better Auth
-  BETTER_AUTH_SECRET: required('BETTER_AUTH_SECRET'),
+  // Note: Better Auth reads BETTER_AUTH_SECRET directly from process.env (not from this object)
+  // Better Auth has a default secret in development: "better-auth-secret-123456789"
+  // In production, Better Auth will throw an error if not set
+  // We don't validate it here since Better Auth handles it internally
   BETTER_AUTH_URL: optional('BETTER_AUTH_URL') || optional('BASE_URL') || 'http://localhost:3000',
   BASE_URL: optional('BASE_URL') || optional('BETTER_AUTH_URL') || 'http://localhost:3000',
 
@@ -124,7 +127,7 @@ export function assertEnvReady() {
     NODE_ENV: env.NODE_ENV,
     IS_AMPLIFY_SSR: env.IS_AMPLIFY_SSR,
     POSTGRES_URL: !!env.POSTGRES_URL ? `set (${env.POSTGRES_URL.substring(0, 20)}...)` : 'missing',
-    BETTER_AUTH_SECRET: !!env.BETTER_AUTH_SECRET,
+    BETTER_AUTH_SECRET: !!process.env.BETTER_AUTH_SECRET || 'using Better Auth default',
     BETTER_AUTH_URL: env.BETTER_AUTH_URL,
     GOOGLE_CLIENT_ID: !!env.GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET: !!env.GOOGLE_CLIENT_SECRET,

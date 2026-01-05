@@ -1,0 +1,26 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        # Install pnpm globally if not available
+        - npm install -g pnpm
+        # Install dependencies
+        - pnpm install --no-frozen-lockfile
+        # Generate database migrations (if schema changed)
+        - pnpm db:generate
+    build:
+      commands:
+        # Run database migrations to create/update tables
+        - pnpm db:migrate
+        # Build Next.js application
+        - pnpm build
+  artifacts:
+    baseDirectory: .next
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**/*
+      - .next/cache/**/*
+

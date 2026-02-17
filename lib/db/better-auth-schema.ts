@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, integer, uniqueIndex } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -28,6 +28,8 @@ export const session = pgTable("session", {
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
+  activeOrganizationId: text("active_organization_id"),
+  activeTeamId: text("active_team_id"),
 });
 
 export const account = pgTable("account", {
@@ -60,5 +62,97 @@ export const verification = pgTable("verification", {
     .defaultNow()
     .$onUpdate(() => /* @__PURE__ */ new Date())
     .notNull(),
+});
+
+export const ssoProvider = pgTable("sso_provider", {
+  id: text("id").primaryKey(),
+  issuer: text("issuer").notNull(),
+  domain: text("domain").notNull(),
+  oidcConfig: text("oidc_config"),
+  samlConfig: text("saml_config"),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  providerId: text("provider_id").notNull(),
+  organizationId: text("organization_id"),
+  domainVerified: boolean("domain_verified").default(false),
+  domainVerificationToken: text("domain_verification_token"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => /* @__PURE__ */ new Date())
+    .notNull(),
+});
+
+export const organization = pgTable("organization", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  slug: text("slug").unique(),
+  logo: text("logo"),
+  metadata: text("metadata"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const member = pgTable("member", {
+  id: text("id").primaryKey(),
+  organizationId: text("organization_id")
+    .notNull()
+    .references(() => organization.id, { onDelete: "cascade" }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  role: text("role").notNull().default("member"),
+  teamId: text("team_id"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const agent = pgTable("agent", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  orgId: text("org_id"),
+  scopes: text("scopes"),
+  role: text("role"),
+  status: text("status").notNull().default("active"),
+  publicKey: text("public_key").notNull(),
+  kid: text("kid"),
+  lastUsedAt: timestamp("last_used_at"),
+  metadata: text("metadata"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
+});
+
+export const deviceCode = pgTable("device_code", {
+  id: text("id").primaryKey(),
+  deviceCode: text("device_code").notNull(),
+  userCode: text("user_code").notNull(),
+  userId: text("user_id"),
+  expiresAt: timestamp("expires_at").notNull(),
+  status: text("status").notNull(),
+  lastPolledAt: timestamp("last_polled_at"),
+  pollingInterval: integer("polling_interval"),
+  clientId: text("client_id"),
+  scope: text("scope"),
+});
+
+export const invitation = pgTable("invitation", {
+  id: text("id").primaryKey(),
+  organizationId: text("organization_id")
+    .notNull()
+    .references(() => organization.id, { onDelete: "cascade" }),
+  email: text("email").notNull(),
+  role: text("role"),
+  status: text("status").notNull().default("pending"),
+  inviterId: text("inviter_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  teamId: text("team_id"),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

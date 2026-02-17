@@ -1,0 +1,2 @@
+overrides:
+  better-auth: link:../betterAuth/better-auth-2/better-auth/packages/better-auth

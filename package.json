@@ -1,23 +1,26 @@
 {
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev --turbopack -p 4000",
     "build": "next build",
     "start": "next start",
     "db:setup": "npx tsx lib/db/setup.ts",
     "db:seed": "npx tsx lib/db/seed.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "agent:local": "npx tsx agents/local-agent.ts"
   },
   "dependencies": {
+    "@better-auth/infra": "file:packages/better-auth-infra",
+    "@better-auth/sso": "^1.4.18",
     "@tailwindcss/postcss": "4.1.7",
     "@types/node": "^22.15.18",
     "@types/react": "19.1.4",
     "@types/react-dom": "19.1.5",
     "autoprefixer": "^10.4.21",
     "bcryptjs": "^3.0.2",
-    "better-auth": "^1.4.10",
+    "better-auth": "1.5.0-beta.13",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dotenv": "^16.5.0",
@@ -38,5 +41,8 @@
     "tw-animate-css": "^1.3.0",
     "typescript": "^5.8.3",
     "zod": "^3.24.4"
+  },
+  "devDependencies": {
+    "tsx": "^4.21.0"
   }
 }

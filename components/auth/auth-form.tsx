@@ -21,6 +21,8 @@ export function AuthForm() {
   const [loginMethod, setLoginMethod] = useState<"email" | "username">("username");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [ssoEmail, setSsoEmail] = useState("");
+  const [ssoError, setSsoError] = useState<string | null>(null);
   const { data: session } = useSession();
   const { hasPassword, isLoading: isCheckingAuth, mutate: mutateHasPassword } = useHasPassword();
 
@@ -135,6 +137,37 @@ export function AuthForm() {
       });
     } catch (err) {
       setError("Failed to sign in with Google");
+      setIsLoading(false);
+    }
+  };
+
+  const handleSSOSignIn = async () => {
+    setIsLoading(true);
+    setSsoError(null);
+    setError(null);
+
+    try {
+      const res = await fetch("/api/auth/sign-in/sso", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: ssoEmail,
+          callbackURL: "/",
+          errorCallbackURL: "/",
+        }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else if (data.error) {
+        setSsoError(data.error.message || "No SSO provider found for this domain");
+        setIsLoading(false);
+      } else {
+        setSsoError("No SSO provider found for this domain");
+        setIsLoading(false);
+      }
+    } catch (err) {
+      setSsoError("Failed to initiate SSO sign-in");
       setIsLoading(false);
     }
   };
@@ -476,6 +509,50 @@ export function AuthForm() {
         </svg>
         Continue with Google
       </Button>
+
+      {!isSignUp && (
+        <>
+          <div className="mt-4">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">Or use enterprise SSO</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-4">
+            <div className="flex gap-2">
+              <Input
+                type="email"
+                value={ssoEmail}
+                onChange={(e) => setSsoEmail(e.target.value)}
+                placeholder="you@company.com"
+                disabled={isLoading}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleSSOSignIn}
+                disabled={isLoading || !ssoEmail}
+                size="lg"
+                className="shrink-0"
+              >
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  "SSO"
+                )}
+              </Button>
+            </div>
+            {ssoError && (
+              <p className="mt-2 text-xs text-red-500">{ssoError}</p>
+            )}
+          </div>
+        </>
+      )}
 
       <div className="mt-6 text-center">
         <button

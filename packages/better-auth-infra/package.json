@@ -1,0 +1,34 @@
+{
+  "name": "@better-auth/infra",
+  "version": "0.1.6",
+  "description": "Dashboard and analytics plugin for Better Auth",
+  "type": "module",
+  "main": "index.mjs",
+  "module": "index.mjs",
+  "types": "index.d.mts",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./index.d.mts",
+      "import": "./index.mjs"
+    },
+    "./client": {
+      "types": "./client.d.mts",
+      "import": "./client.mjs"
+    },
+    "./email": {
+      "types": "./email.d.mts",
+      "import": "./email.mjs"
+    }
+  },
+  "dependencies": {
+    "@better-auth/utils": "^0.3.1",
+    "@better-fetch/fetch": "^1.1.21",
+    "better-call": "^1.2.1",
+    "jose": "^6.1.0",
+    "libphonenumber-js": "^1.12.36"
+  },
+  "peerDependencies": {
+    "better-auth": ">=1.4.15"
+  }
+}

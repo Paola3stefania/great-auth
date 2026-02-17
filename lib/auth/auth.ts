@@ -2,7 +2,9 @@ import 'server-only';
 
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { username } from "better-auth/plugins";
+import { username, organization, agentAuth, deviceAuthorization } from "better-auth/plugins";
+import { infra } from "@better-auth/infra";
+import { sso } from "@better-auth/sso";
 import { db } from "@/lib/db/drizzle";
 import * as betterAuthSchema from "@/lib/db/better-auth-schema";
 import { env } from "@/lib/env";
@@ -60,6 +62,48 @@ export const auth = betterAuth({
         displayUsername: "post-normalization",
       },
     }),
+    organization(),
+    infra({
+      apiUrl: env.BETTER_AUTH_API_URL,
+      kvUrl: env.BETTER_AUTH_KV_URL,
+      apiKey: env.BETTER_AUTH_API_KEY,
+    }),
+    agentAuth({
+      roles: {
+        reader: ["reports.read"],
+        writer: ["reports.read", "reports.write", "email.send"],
+      },
+      defaultRole: "reader",
+    }),
+    deviceAuthorization(),
+    sso({
+      domainVerification: { enabled: true },
+      ...(env.SSO_PROVIDER_ID && env.SSO_ISSUER && env.SSO_CLIENT_ID ? (() => {
+        const issuerBase = env.SSO_ISSUER!.replace(/\/+$/, ""); // strip trailing slashes for URLs
+        return {
+          defaultSSO: [
+            {
+              providerId: env.SSO_PROVIDER_ID,
+              domain: env.SSO_DOMAIN || "",
+              oidcConfig: {
+                issuer: env.SSO_ISSUER!, // keep as-is for token verification (Auth0 uses trailing /)
+                clientId: env.SSO_CLIENT_ID!,
+                clientSecret: env.SSO_CLIENT_SECRET || "",
+                discoveryEndpoint: `${issuerBase}/.well-known/openid-configuration`,
+                jwksEndpoint: `${issuerBase}/.well-known/jwks.json`,
+                authorizationEndpoint: `${issuerBase}/authorize`,
+                tokenEndpoint: `${issuerBase}/oauth/token`,
+                userInfoEndpoint: `${issuerBase}/userinfo`,
+                pkce: true,
+              },
+            },
+          ],
+        };
+      })() : {}),
+    }),
+  ],
+  trustedOrigins: [
+    ...(env.SSO_ISSUER ? [env.SSO_ISSUER.replace(/\/+$/, "")] : []),
   ],
   baseURL: env.BETTER_AUTH_URL,
   basePath: "/api/auth",

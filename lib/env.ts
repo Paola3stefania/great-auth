@@ -115,6 +115,18 @@ export const env = {
   // Google OAuth (for SSO)
   GOOGLE_CLIENT_ID: optional('GOOGLE_CLIENT_ID', ''),
   GOOGLE_CLIENT_SECRET: optional('GOOGLE_CLIENT_SECRET', ''),
+
+  // Better Auth Infra
+  BETTER_AUTH_API_KEY: optional('BETTER_AUTH_API_KEY', ''),
+  BETTER_AUTH_API_URL: optional('BETTER_AUTH_API_URL', 'http://localhost:8000'),
+  BETTER_AUTH_KV_URL: optional('BETTER_AUTH_KV_URL', 'http://localhost:8787'),
+
+  // SSO OIDC Provider
+  SSO_PROVIDER_ID: optional('SSO_PROVIDER_ID', ''),
+  SSO_ISSUER: optional('SSO_ISSUER', ''),
+  SSO_DOMAIN: optional('SSO_DOMAIN', ''),
+  SSO_CLIENT_ID: optional('SSO_CLIENT_ID', ''),
+  SSO_CLIENT_SECRET: optional('SSO_CLIENT_SECRET', ''),
 } as const;
 
 /**

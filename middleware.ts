@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { getCookieCache } from 'better-auth/cookies';
 
 const protectedRoutes = '/dashboard';
 
@@ -9,13 +8,10 @@ export async function middleware(request: NextRequest) {
   const isProtectedRoute = pathname.startsWith(protectedRoutes);
 
   if (isProtectedRoute) {
-    try {
-      const session = await getCookieCache(request);
-      if (!session) {
-        return NextResponse.redirect(new URL('/', request.url));
-      }
-    } catch (error) {
-      console.error('Error checking session:', error);
+    const sessionToken =
+      request.cookies.get('better-auth.session_token')?.value ||
+      request.cookies.get('__Secure-better-auth.session_token')?.value;
+    if (!sessionToken) {
       return NextResponse.redirect(new URL('/', request.url));
     }
   }

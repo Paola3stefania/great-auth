@@ -104,6 +104,7 @@ export const auth = betterAuth({
   ],
   trustedOrigins: [
     ...(env.SSO_ISSUER ? [env.SSO_ISSUER.replace(/\/+$/, "")] : []),
+    "http://localhost:4000",
   ],
   baseURL: env.BETTER_AUTH_URL,
   basePath: "/api/auth",

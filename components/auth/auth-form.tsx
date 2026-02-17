@@ -26,9 +26,10 @@ export function AuthForm() {
   const { data: session } = useSession();
   const { hasPassword, isLoading: isCheckingAuth, mutate: mutateHasPassword } = useHasPassword();
 
-  // Check for signup and email params from URL
+  // Check for signup, email, and callbackURL params from URL
   const signupParam = searchParams.get('signup');
   const emailParam = searchParams.get('email');
+  const callbackURL = searchParams.get('callbackURL') || '/';
   
   useEffect(() => {
     if (signupParam === 'true') {
@@ -66,7 +67,7 @@ export function AuthForm() {
             setError(null);
             // Invalidate cache since password was just created
             await mutateHasPassword();
-            router.push("/");
+            router.push(callbackURL);
             router.refresh();
           }
         } else {
@@ -90,7 +91,7 @@ export function AuthForm() {
           } else {
             // Invalidate cache since password was just created
             await mutateHasPassword();
-            router.push("/");
+            router.push(callbackURL);
             router.refresh();
           }
         }
@@ -103,7 +104,7 @@ export function AuthForm() {
           if (result.error) {
             setError(result.error.message || "Failed to sign in");
           } else {
-            router.push("/");
+            router.push(callbackURL);
             router.refresh();
           }
         } else {
@@ -114,7 +115,7 @@ export function AuthForm() {
           if (result.error) {
             setError(result.error.message || "Failed to sign in");
           } else {
-            router.push("/");
+            router.push(callbackURL);
             router.refresh();
           }
         }
@@ -133,7 +134,7 @@ export function AuthForm() {
     try {
       await authClient.signIn.social({
         provider: "google",
-        callbackURL: "/",
+        callbackURL: callbackURL,
       });
     } catch (err) {
       setError("Failed to sign in with Google");
@@ -152,7 +153,7 @@ export function AuthForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: ssoEmail,
-          callbackURL: "/",
+          callbackURL: callbackURL,
           errorCallbackURL: "/",
         }),
       });

@@ -127,6 +127,22 @@ export const agent = pgTable("agent", {
     .notNull(),
 });
 
+export const agentActivity = pgTable("agent_activity", {
+  id: text("id").primaryKey(),
+  agentId: text("agent_id")
+    .notNull()
+    .references(() => agent.id, { onDelete: "cascade" }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  method: text("method").notNull(),
+  path: text("path").notNull(),
+  status: integer("status"),
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const deviceCode = pgTable("device_code", {
   id: text("id").primaryKey(),
   deviceCode: text("device_code").notNull(),

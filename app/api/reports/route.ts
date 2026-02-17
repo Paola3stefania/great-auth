@@ -2,9 +2,33 @@ import 'server-only';
 
 import { auth } from "@/lib/auth/auth";
 
+type AgentSession = {
+  agent: {
+    id: string;
+    name: string;
+    scopes: string[];
+    role: string | null;
+  };
+  user: {
+    id: string;
+    name: string;
+    email: string;
+  };
+};
+
 export async function GET(req: Request) {
   const session = await auth.api.getSession({ headers: req.headers });
-  const agentSession = await auth.api.getAgentSession({ headers: req.headers });
+
+  // getAgentSession is provided by the agentAuth plugin
+  const getAgentSession = (auth.api as Record<string, Function>).getAgentSession;
+  let agentSession: AgentSession | null = null;
+  if (getAgentSession) {
+    try {
+      agentSession = await getAgentSession({ headers: req.headers });
+    } catch {
+      // Not an agent request
+    }
+  }
 
   if (session) {
     return Response.json({

@@ -1,11 +1,13 @@
 {
   "mcpServers": {
     "better-auth-agent": {
-      "command": "npx",
+      "command": "node",
       "args": [
+        "--import",
         "tsx",
         "/Users/user/Coding/betterAuth/better-auth-2/better-auth/packages/better-auth/src/plugins/agent-auth/mcp-server.ts"
-      ]
+      ],
+      "cwd": "/Users/user/Coding/great-auth"
     }
   }
 }

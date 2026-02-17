@@ -9,7 +9,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
-    "agent:local": "npx tsx agents/local-agent.ts"
+    "agent:local": "node --import tsx agents/local-agent.ts"
   },
   "dependencies": {
     "@better-auth/infra": "file:packages/better-auth-infra",
@@ -43,6 +43,7 @@
     "zod": "^3.24.4"
   },
   "devDependencies": {
+    "@modelcontextprotocol/sdk": "^1.26.0",
     "tsx": "^4.21.0"
   }
 }

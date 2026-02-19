@@ -81,6 +81,22 @@ export async function revokeAgent(agentId: string) {
   });
 }
 
+export async function revokeAllAgents(): Promise<{ revoked: number; errors: string[] }> {
+  const list = await listAgents();
+  if (list.error || !list.data) return { revoked: 0, errors: [list.error || "Failed to list agents"] };
+  const active = list.data.filter((a) => a.status === "active");
+  const errors: string[] = [];
+  let revoked = 0;
+  await Promise.all(
+    active.map(async (agent) => {
+      const res = await revokeAgent(agent.id);
+      if (res.error) errors.push(`${agent.name}: ${res.error}`);
+      else revoked++;
+    })
+  );
+  return { revoked, errors };
+}
+
 export type AgentActivity = {
   id: string;
   agentId: string;

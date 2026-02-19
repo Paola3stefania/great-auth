@@ -13,6 +13,7 @@ import { Suspense } from 'react';
 type DeviceInfo = {
   userCode: string;
   clientId: string;
+  clientName?: string;
   scope?: string;
   expiresAt: string;
 };
@@ -53,6 +54,7 @@ function DeviceApprovalContent() {
         device: {
           userCode: code,
           clientId: data.client_id || data.clientId || 'unknown',
+          clientName: data.client_name || data.clientName,
           scope: data.scope,
           expiresAt: data.expires_at || data.expiresAt,
         },
@@ -187,6 +189,7 @@ function DeviceApprovalContent() {
 
   if (state.step === 'confirm') {
     const scopes = state.device.scope ? state.device.scope.split(' ').filter(Boolean) : [];
+    const displayName = state.device.clientName || state.device.clientId;
     return (
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
@@ -195,7 +198,8 @@ function DeviceApprovalContent() {
           </div>
           <CardTitle>Approve Agent Connection</CardTitle>
           <CardDescription>
-            An agent is requesting access to your account.
+            <span className="font-semibold text-gray-900">{displayName}</span>{' '}
+            is requesting access to your account.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -205,8 +209,8 @@ function DeviceApprovalContent() {
               <span className="font-mono font-medium">{state.device.userCode}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-500">Client</span>
-              <span className="font-medium">{state.device.clientId}</span>
+              <span className="text-gray-500">Agent</span>
+              <span className="font-medium">{displayName}</span>
             </div>
             {scopes.length > 0 && (
               <div className="flex justify-between">

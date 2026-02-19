@@ -154,6 +154,7 @@ export const deviceCode = pgTable("device_code", {
   pollingInterval: integer("polling_interval"),
   clientId: text("client_id"),
   scope: text("scope"),
+  clientName: text("client_name"),
 });
 
 export const invitation = pgTable("invitation", {

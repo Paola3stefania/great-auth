@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { useSession } from '@/lib/auth/client';
 import {
-  listAgents, updateAgent, revokeAgent, getAgentActivity,
+  listAgents, updateAgent, revokeAgent, revokeAllAgents, getAgentActivity,
   type Agent, type AgentActivity,
 } from '@/lib/auth/agent-api';
 
@@ -55,6 +55,8 @@ export default function AgentsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [revokingAll, setRevokingAll] = useState(false);
+  const [showRevokeAllConfirm, setShowRevokeAllConfirm] = useState(false);
 
   const fetchAgents = useCallback(async () => {
     if (!session?.user) return;
@@ -88,6 +90,24 @@ export default function AgentsPage() {
     setAgents((prev) =>
       prev.map((a) => (a.id === agentId ? { ...a, status: 'revoked' as const } : a))
     );
+  }
+
+  async function handleRevokeAll() {
+    setRevokingAll(true);
+    try {
+      const result = await revokeAllAgents();
+      if (result.errors.length > 0) {
+        setError(`Revoked ${result.revoked}, but ${result.errors.length} failed`);
+      }
+      setAgents((prev) =>
+        prev.map((a) => a.status === 'active' ? { ...a, status: 'revoked' as const } : a)
+      );
+    } catch {
+      setError('Failed to revoke agents');
+    } finally {
+      setRevokingAll(false);
+      setShowRevokeAllConfirm(false);
+    }
   }
 
   const activeAgents = agents.filter((a) => a.status === 'active');
@@ -162,7 +182,44 @@ export default function AgentsPage() {
         <div className="space-y-3">
           {activeAgents.length > 0 && (
             <>
-              <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide">Active</h2>
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide">Active</h2>
+                {activeAgents.length > 0 && (
+                  showRevokeAllConfirm ? (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-red-600">Revoke all {activeAgents.length} agents?</span>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        className="h-7 text-xs"
+                        onClick={handleRevokeAll}
+                        disabled={revokingAll}
+                      >
+                        {revokingAll ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : null}
+                        Confirm
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 text-xs"
+                        onClick={() => setShowRevokeAllConfirm(false)}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 text-xs text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                      onClick={() => setShowRevokeAllConfirm(true)}
+                    >
+                      <AlertTriangle className="h-3 w-3 mr-1" />
+                      Revoke All
+                    </Button>
+                  )
+                )}
+              </div>
               {activeAgents.map((agent) => (
                 <AgentCard
                   key={agent.id}

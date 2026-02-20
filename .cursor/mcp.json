@@ -1,13 +1,15 @@
 {
   "mcpServers": {
     "better-auth-agent": {
-      "command": "node",
+      "command": "sh",
       "args": [
-        "--import",
-        "tsx",
-        "/Users/user/Coding/betterAuth/better-auth-2/better-auth/packages/better-auth/src/plugins/agent-auth/mcp-server.ts"
+        "-c",
+        "set -a && source /Users/user/Coding/great-auth/.env && set +a && npx tsx /Users/user/Coding/betterAuth/better-auth-2/better-auth/packages/better-auth/src/plugins/agent-auth/mcp-server.ts"
       ],
-      "cwd": "/Users/user/Coding/great-auth"
+      "env": {
+        "BETTER_AUTH_URL": "http://localhost:4000",
+        "BETTER_AUTH_ENCRYPTION_KEY": "dev-encryption-key-change-in-prod"
+      }
     }
   }
 }

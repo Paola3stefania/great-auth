@@ -119,6 +119,7 @@ export const agent = pgTable("agent", {
   publicKey: text("public_key").notNull(),
   kid: text("kid"),
   lastUsedAt: timestamp("last_used_at"),
+  expiresAt: timestamp("expires_at"),
   metadata: text("metadata"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
@@ -155,6 +156,27 @@ export const deviceCode = pgTable("device_code", {
   clientId: text("client_id"),
   scope: text("scope"),
   clientName: text("client_name"),
+  scopeDetails: text("scope_details"),
+  authorizationDetails: text("authorization_details"),
+});
+
+export const mcpProvider = pgTable("mcp_provider", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull().unique(),
+  displayName: text("display_name").notNull(),
+  transport: text("transport").notNull(),
+  command: text("command"),
+  args: text("args"),
+  env: text("env"),
+  url: text("url"),
+  headers: text("headers"),
+  toolScopes: text("tool_scopes"),
+  status: text("status").notNull().default("active"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
 });
 
 export const invitation = pgTable("invitation", {

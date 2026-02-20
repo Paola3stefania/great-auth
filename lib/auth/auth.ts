@@ -74,6 +74,8 @@ export const auth = betterAuth({
         writer: ["reports.read", "reports.write", "email.send"],
       },
       defaultRole: "reader",
+      agentSessionTTL: 3600,
+      mcpProviders: ["github"],
     }),
     deviceAuthorization(),
     sso({

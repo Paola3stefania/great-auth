@@ -1,7 +1,9 @@
 "use client";
 
+import type { BetterAuthClientPlugin } from "better-auth/client";
 import { createAuthClient } from "better-auth/react";
-import { usernameClient, organizationClient, agentAuthClient, deviceAuthorizationClient } from "better-auth/client/plugins";
+import { usernameClient, organizationClient, deviceAuthorizationClient, asyncAuthClient } from "better-auth/client/plugins";
+import { agentAuthClient } from "@better-auth/agent-auth/client";
 import { infraClient } from "@better-auth/infra/client";
 import { ssoClient } from "@better-auth/sso/client";
 
@@ -14,8 +16,9 @@ export const authClient = createAuthClient({
     organizationClient(),
     infraClient(),
     ssoClient(),
-    agentAuthClient(),
+    agentAuthClient() as unknown as BetterAuthClientPlugin,
     deviceAuthorizationClient(),
+    asyncAuthClient(),
   ],
 });
 

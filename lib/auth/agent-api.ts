@@ -1,23 +1,51 @@
 "use client";
 
 /**
- * Typed helpers for agent auth API calls.
+ * Typed helpers for agent-auth API calls.
  * The agentAuthClient plugin is registered on authClient but TypeScript
  * can't infer the `.agent` namespace through the local symlink.
  * These wrappers call the Better Auth endpoints directly via fetch.
  */
 
+export type AgentHost = {
+  id: string;
+  userId: string | null;
+  referenceId: string | null;
+  scopes: string[];
+  status: "active" | "pending" | "revoked" | "rejected";
+  activatedAt: string | null;
+  expiresAt: string | null;
+  lastUsedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type Agent = {
   id: string;
   name: string;
-  status: "active" | "revoked";
-  scopes: string[];
-  role: string | null;
-  orgId: string | null;
+  userId: string | null;
+  hostId: string;
+  status: "active" | "pending" | "expired" | "revoked" | "rejected";
+  mode: "delegated" | "autonomous";
+  lastUsedAt: string | null;
+  activatedAt: string | null;
+  expiresAt: string | null;
   metadata: Record<string, unknown> | null;
   createdAt: string;
   updatedAt: string;
-  lastUsedAt: string | null;
+};
+
+export type AgentPermission = {
+  id: string;
+  agentId: string;
+  scope: string;
+  status: "active" | "pending";
+  referenceId: string | null;
+  grantedBy: string | null;
+  reason: string | null;
+  expiresAt: string | null;
+  createdAt: string;
+  updatedAt: string;
 };
 
 function base() {
@@ -54,24 +82,43 @@ async function api<T>(
   }
 }
 
-export async function listAgents(orgId?: string) {
-  return api<Agent[]>("/agent/list", {
-    query: orgId ? { orgId } : undefined,
+// ── Host management ─────────────────────────────────────────────────────
+
+export async function listHosts() {
+  return api<{ hosts: AgentHost[] }>("/agent/host/list");
+}
+
+export async function getHost(hostId: string) {
+  return api<AgentHost>("/agent/host/get", { query: { hostId } });
+}
+
+export async function createHost(body: {
+  scopes?: string[];
+  publicKey?: Record<string, unknown>;
+  jwksUrl?: string;
+}) {
+  return api<AgentHost>("/agent/host/create", { method: "POST", body });
+}
+
+export async function revokeHost(hostId: string) {
+  return api<{ success: boolean }>("/agent/host/revoke", {
+    method: "POST",
+    body: { hostId },
   });
+}
+
+// ── Agent management ────────────────────────────────────────────────────
+
+export async function listAgents() {
+  const res = await api<Agent[] | { agents: Agent[] }>("/agent/list");
+  if (res.data && !Array.isArray(res.data) && Array.isArray(res.data.agents)) {
+    return { data: res.data.agents, error: null };
+  }
+  return res as { data: Agent[] | null; error: string | null };
 }
 
 export async function getAgent(agentId: string) {
   return api<Agent>("/agent/get", { query: { agentId } });
-}
-
-export async function updateAgent(body: {
-  agentId: string;
-  name?: string;
-  scopes?: string[];
-  role?: string;
-  metadata?: Record<string, unknown>;
-}) {
-  return api<Agent>("/agent/update", { method: "POST", body });
 }
 
 export async function revokeAgent(agentId: string) {
@@ -97,26 +144,51 @@ export async function revokeAllAgents(): Promise<{ revoked: number; errors: stri
   return { revoked, errors };
 }
 
-export type AgentActivity = {
-  id: string;
+// ── Permissions ─────────────────────────────────────────────────────────
+
+export async function grantPermission(body: {
   agentId: string;
-  userId: string;
-  method: string;
-  path: string;
-  status: number | null;
-  ipAddress: string | null;
-  userAgent: string | null;
-  createdAt: string;
+  scope: string;
+  reason?: string;
+}) {
+  return api<AgentPermission>("/agent/grant-permission", { method: "POST", body });
+}
+
+// ── Discovery ───────────────────────────────────────────────────────────
+
+export type DiscoveryResponse = {
+  protocol_version: string;
+  provider_name: string;
+  description: string;
+  issuer: string;
+  algorithms: string[];
+  modes: string[];
+  approval_methods: string[];
+  endpoints: Record<string, string>;
+  jwt_max_age: number;
+  session_ttl: number;
+  max_lifetime: number;
+  absolute_lifetime: number;
+  blocked_scopes: string[];
 };
 
-export async function getAgentActivity(opts: {
-  agentId?: string;
-  limit?: number;
-  offset?: number;
-}) {
-  const query: Record<string, string> = {};
-  if (opts.agentId) query.agentId = opts.agentId;
-  if (opts.limit) query.limit = String(opts.limit);
-  if (opts.offset) query.offset = String(opts.offset);
-  return api<AgentActivity[]>("/agent/activity", { query });
+export async function discover() {
+  return api<DiscoveryResponse>("/agent/discover");
+}
+
+// ── Gateway ─────────────────────────────────────────────────────────────
+
+export type GatewayProvider = {
+  name: string;
+  displayName: string;
+  tools: Array<{ name: string; description: string }>;
+};
+
+export type GatewayDiscoverResponse = {
+  providers: GatewayProvider[];
+  cached: boolean;
+};
+
+export async function gatewayDiscover() {
+  return api<GatewayDiscoverResponse>("/agent/gateway/discover");
 }

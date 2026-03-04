@@ -1,7 +1,7 @@
 {
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack -p 4000",
+    "dev": "next dev -p 4000",
     "build": "next build",
     "start": "next start",
     "db:setup": "npx tsx lib/db/setup.ts",
@@ -12,12 +12,15 @@
     "agent:local": "node --import tsx agents/local-agent.ts"
   },
   "dependencies": {
+    "@better-auth/agent-auth": "link:/Users/user/Coding/betterAuth/better-auth-2/agent-auth/packages/agent-auth",
+    "@better-auth/agent-gateway": "link:/Users/user/Coding/betterAuth/better-auth-2/agent-auth/packages/agent-gateway",
     "@better-auth/infra": "file:packages/better-auth-infra",
     "@better-auth/sso": "^1.4.18",
     "@tailwindcss/postcss": "4.1.7",
     "@types/node": "^22.15.18",
     "@types/react": "19.1.4",
     "@types/react-dom": "19.1.5",
+    "auth": "link:/Users/user/Coding/betterAuth/better-auth-2/better-auth/packages/cli",
     "autoprefixer": "^10.4.21",
     "bcryptjs": "^3.0.2",
     "better-auth": "link:/Users/user/Coding/betterAuth/better-auth-2/better-auth/packages/better-auth",
@@ -29,6 +32,7 @@
     "jose": "^6.0.11",
     "lucide-react": "^0.511.0",
     "next": "15.4.0-canary.47",
+    "nodemailer": "^8.0.1",
     "postcss": "^8.5.3",
     "postgres": "^3.4.5",
     "radix-ui": "^1.4.2",
@@ -44,6 +48,7 @@
   },
   "devDependencies": {
     "@modelcontextprotocol/sdk": "^1.26.0",
+    "@types/nodemailer": "^7.0.11",
     "tsx": "^4.21.0"
   }
 }

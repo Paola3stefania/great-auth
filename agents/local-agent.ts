@@ -1,4 +1,4 @@
-import { connectAgent, createAgentClient } from "better-auth/plugins/agent-auth/agent-client";
+import { connectAgent, createAgentClient } from "@better-auth/agent-auth/agent-client";
 
 const APP_URL = process.env.APP_URL || "http://localhost:4000";
 
@@ -9,6 +9,7 @@ async function main() {
     appURL: APP_URL,
     name: "Local Test Agent",
     scopes: ["reports.read"],
+    mode: "delegated",
     onUserCode: ({ userCode, verificationUriComplete }) => {
       console.log("Approve the connection in your browser:\n");
       console.log(`  ${verificationUriComplete}\n`);
@@ -21,6 +22,8 @@ async function main() {
   });
 
   console.log(`\nConnected! Agent ID: ${result.agentId}`);
+  console.log(`Host ID: ${result.hostId}`);
+  console.log(`Mode: ${result.mode}`);
   console.log(`Scopes: ${result.scopes.join(", ")}`);
 
   const agent = createAgentClient({
@@ -29,11 +32,9 @@ async function main() {
     privateKey: result.privateKey,
   });
 
-  // Test: get agent session
   const session = await agent.getSession();
   console.log("\nAgent session:", JSON.stringify(session, null, 2));
 
-  // Test: fetch protected reports endpoint
   const res = await agent.fetch("/api/reports");
   const data = await res.json();
   console.log("\nReports response:", JSON.stringify(data, null, 2));

@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean, integer, uniqueIndex } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, integer } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -106,19 +106,41 @@ export const member = pgTable("member", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const agentHost = pgTable("agent_host", {
+  id: text("id").primaryKey(),
+  userId: text("user_id")
+    .references(() => user.id, { onDelete: "cascade" }),
+  referenceId: text("reference_id"),
+  scopes: text("scopes"),
+  publicKey: text("public_key"),
+  kid: text("kid"),
+  jwksUrl: text("jwks_url"),
+  status: text("status").notNull().default("active"),
+  activatedAt: timestamp("activated_at"),
+  expiresAt: timestamp("expires_at"),
+  lastUsedAt: timestamp("last_used_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
+});
+
 export const agent = pgTable("agent", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   userId: text("user_id")
-    .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
-  orgId: text("org_id"),
-  scopes: text("scopes"),
-  role: text("role"),
+  hostId: text("host_id")
+    .notNull()
+    .references(() => agentHost.id, { onDelete: "cascade" }),
   status: text("status").notNull().default("active"),
-  publicKey: text("public_key").notNull(),
+  mode: text("mode").notNull().default("delegated"),
+  publicKey: text("public_key"),
   kid: text("kid"),
+  jwksUrl: text("jwks_url"),
   lastUsedAt: timestamp("last_used_at"),
+  activatedAt: timestamp("activated_at"),
   expiresAt: timestamp("expires_at"),
   metadata: text("metadata"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -128,20 +150,23 @@ export const agent = pgTable("agent", {
     .notNull(),
 });
 
-export const agentActivity = pgTable("agent_activity", {
+export const agentPermission = pgTable("agent_permission", {
   id: text("id").primaryKey(),
   agentId: text("agent_id")
     .notNull()
     .references(() => agent.id, { onDelete: "cascade" }),
-  userId: text("user_id")
-    .notNull()
+  scope: text("scope").notNull(),
+  referenceId: text("reference_id"),
+  grantedBy: text("granted_by")
     .references(() => user.id, { onDelete: "cascade" }),
-  method: text("method").notNull(),
-  path: text("path").notNull(),
-  status: integer("status"),
-  ipAddress: text("ip_address"),
-  userAgent: text("user_agent"),
+  expiresAt: timestamp("expires_at"),
+  status: text("status").notNull().default("active"),
+  reason: text("reason"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
 });
 
 export const deviceCode = pgTable("device_code", {
@@ -160,18 +185,54 @@ export const deviceCode = pgTable("device_code", {
   authorizationDetails: text("authorization_details"),
 });
 
-export const mcpProvider = pgTable("mcp_provider", {
+export const oauthApplication = pgTable("oauth_application", {
   id: text("id").primaryKey(),
-  name: text("name").notNull().unique(),
-  displayName: text("display_name").notNull(),
-  transport: text("transport").notNull(),
-  command: text("command"),
-  args: text("args"),
-  env: text("env"),
-  url: text("url"),
-  headers: text("headers"),
-  toolScopes: text("tool_scopes"),
-  status: text("status").notNull().default("active"),
+  name: text("name").notNull(),
+  icon: text("icon"),
+  metadata: text("metadata"),
+  clientId: text("client_id").notNull().unique(),
+  clientSecret: text("client_secret"),
+  redirectUrls: text("redirect_urls").notNull(),
+  type: text("type").notNull(),
+  disabled: boolean("disabled").default(false),
+  userId: text("user_id")
+    .references(() => user.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
+});
+
+export const oauthAccessToken = pgTable("oauth_access_token", {
+  id: text("id").primaryKey(),
+  accessToken: text("access_token").notNull().unique(),
+  refreshToken: text("refresh_token").notNull().unique(),
+  accessTokenExpiresAt: timestamp("access_token_expires_at").notNull(),
+  refreshTokenExpiresAt: timestamp("refresh_token_expires_at").notNull(),
+  clientId: text("client_id")
+    .notNull()
+    .references(() => oauthApplication.clientId, { onDelete: "cascade" }),
+  userId: text("user_id")
+    .references(() => user.id, { onDelete: "cascade" }),
+  scopes: text("scopes").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
+});
+
+export const oauthConsent = pgTable("oauth_consent", {
+  id: text("id").primaryKey(),
+  clientId: text("client_id")
+    .notNull()
+    .references(() => oauthApplication.clientId, { onDelete: "cascade" }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  scopes: text("scopes").notNull(),
+  consentGiven: boolean("consent_given").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()

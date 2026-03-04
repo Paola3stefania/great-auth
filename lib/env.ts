@@ -127,6 +127,10 @@ export const env = {
   SSO_DOMAIN: optional('SSO_DOMAIN', ''),
   SSO_CLIENT_ID: optional('SSO_CLIENT_ID', ''),
   SSO_CLIENT_SECRET: optional('SSO_CLIENT_SECRET', ''),
+
+  // Agent Gateway
+  AGENT_GATEWAY_GITHUB_TOKEN: optional('AGENT_GATEWAY_GITHUB_TOKEN', ''),
+  AGENT_GATEWAY_PROVIDERS: optional('AGENT_GATEWAY_PROVIDERS', 'github'),
 } as const;
 
 /**
